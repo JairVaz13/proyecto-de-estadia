@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorrido Virtual de la Escuela</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+        }
+        #panorama {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s ease;
+        }
+        .navbar .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            text-align: center;
+        }
+        .navbar.scrolled {
+            background-color: rgba(0, 0, 0, 1);
+        }
+        .navbar a {
+            color: #f0f0f0;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s, transform 0.3s;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+        .navbar a:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: none;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1001;
+            font-size: 14px;
+        }
+        .tooltip:after {
+            content: '';
+            position: absolute;
+            border-width: 6px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .pnlm-hotspot-base {
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .pnlm-hotspot-base i {
+            transition: color 0.3s;
+        }
+        .pnlm-hotspot-base:hover i {
+            color: #ffd700;
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 10px;
+            }
+            .navbar .title {
+                font-size: 20px;
+            }
+            .navbar a {
+                font-size: 16px;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar" id="navbar">
+        <div class="title">Recorrido Virtual de la Escuela</div>
+        <div>
+            <a href="#" onclick="changeScene('entrada')">Entrada</a>
+            <a href="#" onclick="changeScene('patio')">Patio</a>
+            <a href="#" onclick="changeScene('aula')">Aula</a>
+        </div>
+    </div>
+    <div id="panorama"></div>
+    <div class="tooltip" id="tooltip"></div>
+    <script>
+        const scenes = {
+            "entrada": {
+                "type": "equirectangular",
+                "panorama": "https://files.readme.io/3f767b4-b620bea-Spherical-2000X1000.jpg",
+                "hotSpots": [
+                    {
+                        "pitch": 10,
+                        "yaw": 20,
+                        "type": "scene",
+                        "text": "Ir al patio",
+                        "sceneId": "patio"
+                    }
+                ]
+            },
+            "patio": {
+                "type": "equirectangular",
+                "panorama": "https://files.readme.io/64c67d9-31585ea-Spherical-Steroescopic-3600X900.jpg",
+                "hotSpots": [
+                    {
+                        "pitch": -10,
+                        "yaw": 30,
+                        "type": "scene",
+                        "text": "Volver a la entrada",
+                        "sceneId": "entrada"
+                    },
+                    {
+                        "pitch": 5,
+                        "yaw": -20,
+                        "type": "scene",
+                        "text": "Ir al aula",
+                        "sceneId": "aula"
+                    }
+                ]
+            },
+            "aula": {
+                "type": "equirectangular",
+                "panorama": "https://st3.depositphotos.com/5682598/36746/i/450/depositphotos_367467982-stock-photo-modern-interior-visualization.jpg",
+                "hotSpots": [
+                    {
+                        "pitch": 0,
+                        "yaw": 0,
+                        "type": "scene",
+                        "text": "Volver al patio",
+                        "sceneId": "patio"
+                    }
+                ]
+            }
+        };
+
+        const viewer = pannellum.viewer('panorama', {
+            "default": {
+                "firstScene": "entrada",
+                "sceneFadeDuration": 1000,
+                "autoLoad": true,
+                "showControls": false
+            },
+            "scenes": scenes
+        });
+
+        function changeScene(sceneId) {
+            viewer.loadScene(sceneId);
+        }
+
+        viewer.on('load', function() {
+            const hotSpots = document.querySelectorAll('.pnlm-hotspot-base');
+            hotSpots.forEach(hotSpot => {
+                hotSpot.addEventListener('mouseover', function(event) {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.innerHTML = hotSpot.innerText;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = `${event.clientX}px`;
+                    tooltip.style.top = `${event.clientY - 40}px`;
+                });
+                hotSpot.addEventListener('mousemove', function(event) {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.style.left = `${event.clientX}px`;
+                    tooltip.style.top = `${event.clientY - 40}px`;
+                });
+                hotSpot.addEventListener('mouseout', function() {
+                    document.getElementById('tooltip').style.display = 'none';
+                });
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

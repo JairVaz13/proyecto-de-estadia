@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Imágenes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .image-container img {
+            max-width: 200px;
+            margin: 10px;
+            border: 1px solid #ddd;
+        }
+        .image-container .image-item {
+            position: relative;
+            display: inline-block;
+        }
+        .image-container .image-item button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .alert-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="alert-container" class="alert-container"></div>
+
+        <h2>Subir Imagen</h2>
+        <form id="uploadForm">
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+            <button type="submit" class="btn btn-primary">Subir</button>
+        </form>
+
+        <h2 class="mt-5">Imágenes</h2>
+        <div id="imageContainer" class="image-container"></div>
+    </div>
+
+    <script>
+        function mostrarAlerta(mensaje, tipo) {
+            const alertContainer = document.getElementById("alert-container");
+            alertContainer.innerHTML = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    ${mensaje}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('image', document.getElementById('imageInput').files[0]);
+
+            try {
+                await fetch('http://localhost:8000/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                mostrarAlerta("Imagen subida exitosamente.", "success");
+            } catch (error) {
+                mostrarAlerta("Error al subir la imagen.", "danger");
+            }
+
+            loadImages();
+        });
+
+        async function loadImages() {
+            try {
+                const response = await fetch('http://localhost:8000/images');
+                const data = await response.json();
+                const images = data.images;
+                
+                const imageContainer = document.getElementById('imageContainer');
+                imageContainer.innerHTML = '';
+
+                images.forEach(image => {
+                    const imageItem = document.createElement('div');
+                    imageItem.classList.add('image-item');
+
+                    const img = document.createElement('img');
+                    img.src = `http://localhost:8000${image.url}`;
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Eliminar';
+                    deleteButton.classList.add('btn', 'btn-danger');
+                    deleteButton.onclick = async () => {
+                        try {
+                            await fetch(`http://localhost:8000/images/${image.id}`, {
+                                method: 'DELETE',
+                            });
+                            mostrarAlerta("Imagen eliminada exitosamente.", "success");
+                        } catch (error) {
+                            mostrarAlerta("Error al eliminar la imagen.", "danger");
+                        }
+                        loadImages();
+                    };
+
+                    imageItem.appendChild(img);
+                    imageItem.appendChild(deleteButton);
+                    imageContainer.appendChild(imageItem);
+                });
+            } catch (error) {
+                mostrarAlerta("Error al cargar las imágenes.", "danger");
+            }
+        }
+
+        loadImages();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

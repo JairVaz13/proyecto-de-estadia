@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Noticias</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Gestión de Noticias</h1>
+        
+        <!-- Alertas -->
+        <div id="alertContainer"></div>
+
+        <!-- Formulario para agregar o actualizar noticias -->
+        <div class="mt-4">
+            <h2>Agregar/Actualizar Noticia</h2>
+            <form id="newsForm">
+                <div class="form-group">
+                    <label for="title">Título</label>
+                    <input type="text" class="form-control" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea class="form-control" id="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="date">Fecha (YYYY-MM-DD)</label>
+                    <input type="date" class="form-control" id="date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Noticia</button>
+            </form>
+        </div>
+        <div id="newsList" class="mt-4"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/news';  // Cambia esta URL según tu configuración
+
+        // Mostrar alerta
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.role = 'alert';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                $(alert).alert('close');
+            }, 5000);
+        }
+
+        function fetchNews() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    let newsHtml = '<ul class="list-group">';
+                    data.forEach((news, index) => {
+                        newsHtml += `
+                            <li class="list-group-item">
+                                <h5>${news.title}</h5>
+                                <p>${news.description}</p>
+                                <small>${news.date}</small>
+                                <button class="btn btn-danger btn-sm float-right ml-2" onclick="deleteNews('${news._id}')">Eliminar</button>
+                                <button class="btn btn-info btn-sm float-right" onclick="editNews('${news._id}')">Editar</button>
+                            </li>
+                        `;
+                    });
+                    newsHtml += '</ul>';
+                    document.getElementById('newsList').innerHTML = newsHtml;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error al obtener las noticias', 'danger');
+                });
+        }
+
+        function createOrUpdateNews(id = null) {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const date = document.getElementById('date').value;
+
+            const news = { title, description, date };
+
+            let url = API_URL;
+            let method = 'POST';
+
+            if (id !== null) {
+                url += `/${id}`;
+                method = 'PUT';
+            }
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(news)
+            }).then(response => response.json())
+              .then(() => {
+                  fetchNews();
+                  document.getElementById('newsForm').reset();
+                  showAlert('Noticia guardada exitosamente', 'success');
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  showAlert('Error al guardar la noticia', 'danger');
+              });
+        }
+
+        function deleteNews(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar esta noticia?')) {
+                fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+                    .then(() => {
+                        fetchNews();
+                        showAlert('Noticia eliminada exitosamente', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert('Error al eliminar la noticia', 'danger');
+                    });
+            }
+        }
+
+        function editNews(id) {
+            fetch(`${API_URL}/${id}`)
+                .then(response => response.json())
+                .then(news => {
+                    document.getElementById('title').value = news.title;
+                    document.getElementById('description').value = news.description;
+                    document.getElementById('date').value = news.date;
+                    document.getElementById('newsForm').onsubmit = (event) => {
+                        event.preventDefault();
+                        createOrUpdateNews(id);
+                    };
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error al editar la noticia', 'danger');
+                });
+        }
+
+        document.getElementById('newsForm').onsubmit = (event) => {
+            event.preventDefault();
+            createOrUpdateNews();
+        };
+
+        // Inicializar la lista de noticias
+        fetchNews();
+    </script>
+</body>
+</html>

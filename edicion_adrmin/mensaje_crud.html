@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Contactos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .alert-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050; /* Ensures alerts are on top */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h3>Lista de Contactos</h3>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Mensaje</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="contactsTable">
+                <!-- Contactos serán insertados aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="alertContainer" class="alert-container"></div>
+
+    <script>
+        async function fetchContacts() {
+            const response = await fetch("http://127.0.0.1:8000/contacts/");
+            const contacts = await response.json();
+
+            const contactsTable = document.getElementById("contactsTable");
+            contactsTable.innerHTML = "";
+
+            contacts.forEach(contact => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${contact.name}</td>
+                    <td>${contact.email}</td>
+                    <td>${contact.phone}</td>
+                    <td>${contact.message}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="updateContact('${contact.id}')">Actualizar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteContact('${contact.id}')">Eliminar</button>
+                        <a href="mailto:${contact.email}" class="btn btn-secondary btn-sm">Gmail</a>
+                        <a href="https://wa.me/${contact.phone}" class="btn btn-success btn-sm" target="_blank">WhatsApp</a>
+                    </td>
+                `;
+
+                contactsTable.appendChild(row);
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById("alertContainer");
+            const alertElement = document.createElement("div");
+            alertElement.className = `alert alert-${type} alert-dismissible fade show`;
+            alertElement.role = "alert";
+            alertElement.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+            alertContainer.appendChild(alertElement);
+
+            // Auto-hide the alert after 5 seconds
+            setTimeout(() => {
+                $(alertElement).alert('close');
+            }, 5000);
+        }
+
+        async function deleteContact(id) {
+            const response = await fetch(`http://127.0.0.1:8000/contacts/${id}`, {
+                method: "DELETE"
+            });
+
+            if (response.ok) {
+                showAlert("Contacto eliminado exitosamente", "success");
+                fetchContacts();
+            } else {
+                showAlert("Error al eliminar el contacto", "danger");
+            }
+        }
+
+        async function updateContact(id) {
+            const name = prompt("Ingresa el nuevo nombre");
+            const email = prompt("Ingresa el nuevo email");
+            const phone = prompt("Ingresa el nuevo teléfono");
+            const message = prompt("Ingresa el nuevo mensaje");
+
+            const response = await fetch(`http://127.0.0.1:8000/contacts/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, phone, message })
+            });
+
+            if (response.ok) {
+                showAlert("Contacto actualizado exitosamente", "success");
+                fetchContacts();
+            } else {
+                showAlert("Error al actualizar el contacto", "danger");
+            }
+        }
+
+        // Fetch contacts on page load
+        fetchContacts();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

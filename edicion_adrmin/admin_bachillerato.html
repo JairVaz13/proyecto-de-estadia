@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Eventos</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .alert-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Administrar Eventos</h1>
+        
+        <!-- Contenedor para las alertas -->
+        <div id="alert-container" class="alert-container"></div>
+        
+        <form id="evento-form" class="mb-5">
+            <input type="hidden" id="evento-id">
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input type="text" class="form-control" id="titulo" required>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <textarea class="form-control" id="descripcion" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="ubicacion">Ubicación</label>
+                <input type="text" class="form-control" id="ubicacion" required>
+            </div>
+            <div class="form-group">
+                <label for="fecha">Fecha</label>
+                <input type="date" class="form-control" id="fecha" required>
+            </div>
+            <div class="form-group">
+                <label for="hora">Hora</label>
+                <input type="time" class="form-control" id="hora" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descripción</th>
+                    <th>Ubicación</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="eventos-tbody">
+                <!-- Aquí se insertarán los eventos -->
+            </tbody>
+        </table>
+
+        <nav>
+            <ul class="pagination justify-content-center mt-4">
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPagina('prev')">Anterior</button>
+                </li>
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPagina('next')">Siguiente</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        let paginaActual = 1;
+        const eventosPorPagina = 2;
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertContainer = document.getElementById("alert-container");
+            alertContainer.innerHTML = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    ${mensaje}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        async function obtenerEventos() {
+            const skip = (paginaActual - 1) * eventosPorPagina;
+            const response = await fetch(`http://localhost:8000/eventos?skip=${skip}&limit=${eventosPorPagina}`);
+            const eventos = await response.json();
+            const tbody = document.getElementById('eventos-tbody');
+            tbody.innerHTML = '';
+            eventos.forEach(evento => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${evento.id}</td>
+                    <td>${evento.titulo}</td>
+                    <td>${evento.descripcion}</td>
+                    <td>${evento.ubicacion}</td>
+                    <td>${evento.fecha}</td>
+                    <td>${evento.hora}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editarEvento(${evento.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarEvento(${evento.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function guardarEvento(event) {
+            event.preventDefault();
+            const id = document.getElementById('evento-id').value;
+            const titulo = document.getElementById('titulo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const ubicacion = document.getElementById('ubicacion').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const evento = { titulo, descripcion, ubicacion, fecha, hora };
+
+            try {
+                if (id) {
+                    await fetch(`http://localhost:8000/eventos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(evento)
+                    });
+                    mostrarAlerta("Evento actualizado exitosamente.", "success");
+                } else {
+                    await fetch('http://localhost:8000/eventos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(evento)
+                    });
+                    mostrarAlerta("Evento creado exitosamente.", "success");
+                }
+            } catch (error) {
+                mostrarAlerta("Error al guardar el evento.", "danger");
+            }
+            document.getElementById('evento-form').reset();
+            document.getElementById('evento-id').value = '';
+            obtenerEventos();
+        }
+
+        async function editarEvento(id) {
+            const response = await fetch(`http://localhost:8000/eventos`);
+            const eventos = await response.json();
+            const evento = eventos.find(evento => evento.id === id);
+
+            document.getElementById('evento-id').value = evento.id;
+            document.getElementById('titulo').value = evento.titulo;
+            document.getElementById('descripcion').value = evento.descripcion;
+            document.getElementById('ubicacion').value = evento.ubicacion;
+            document.getElementById('fecha').value = evento.fecha;
+            document.getElementById('hora').value = evento.hora;
+        }
+
+        async function eliminarEvento(id) {
+            try {
+                await fetch(`http://localhost:8000/eventos/${id}`, {
+                    method: 'DELETE'
+                });
+                mostrarAlerta("Evento eliminado exitosamente.", "success");
+            } catch (error) {
+                mostrarAlerta("Error al eliminar el evento.", "danger");
+            }
+            obtenerEventos();
+        }
+
+        function cambiarPagina(direccion) {
+            if (direccion === 'next') {
+                paginaActual++;
+            } else if (direccion === 'prev' && paginaActual > 1) {
+                paginaActual--;
+            }
+            obtenerEventos();
+        }
+
+        document.getElementById('evento-form').addEventListener('submit', guardarEvento);
+        document.addEventListener('DOMContentLoaded', obtenerEventos);
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

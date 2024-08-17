@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Anuncios</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .alert-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1050; /* Bootstrap alert z-index */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Anuncios</h1>
+
+        <!-- Alertas -->
+        <div id="alert-container" class="alert-container"></div>
+
+        <!-- Create Anuncio -->
+        <div class="mb-4">
+            <h3>Crear Anuncio</h3>
+            <form id="create-form">
+                <div class="form-group">
+                    <label for="create-titulo">Título</label>
+                    <input type="text" class="form-control" id="create-titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="create-descripcion">Descripción</label>
+                    <input type="text" class="form-control" id="create-descripcion" required>
+                </div>
+                <div class="form-group">
+                    <label for="create-fecha">Fecha</label>
+                    <input type="date" class="form-control" id="create-fecha" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </form>
+        </div>
+
+        <!-- Display Anuncios -->
+        <h3>Lista de Anuncios</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="anuncios-table-body">
+                <!-- Los anuncios se insertarán aquí mediante JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination" id="pagination-controls">
+                <!-- Los controles de paginación se insertarán aquí mediante JavaScript -->
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:8000/anuncios';
+        let currentPage = 1;
+        const pageSize = 4;
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.role = 'alert';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000); // Remove alert after 5 seconds
+        }
+
+        async function fetchAnuncios(page = 1) {
+            try {
+                const response = await fetch(`${apiUrl}?page=${page}&size=${pageSize}`);
+                if (!response.ok) throw new Error('Error al obtener anuncios');
+                const anuncios = await response.json();
+                const tableBody = document.getElementById('anuncios-table-body');
+                const paginationControls = document.getElementById('pagination-controls');
+
+                tableBody.innerHTML = '';
+                paginationControls.innerHTML = '';
+
+                anuncios.forEach(anuncio => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${anuncio.id}</td>
+                        <td>${anuncio.titulo}</td>
+                        <td>${anuncio.descripcion}</td>
+                        <td>${anuncio.fecha}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editAnuncio(${anuncio.id})">Actualizar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAnuncio(${anuncio.id})">Eliminar</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Generate pagination controls
+                const totalPages = Math.ceil(100 / pageSize); // Example total count, replace with actual total
+                for (let i = 1; i <= totalPages; i++) { // Example: Pagination with a fixed number of pages
+                    const pageItem = document.createElement('li');
+                    pageItem.className = `page-item ${i === page ? 'active' : ''}`;
+                    pageItem.innerHTML = `
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    `;
+                    paginationControls.appendChild(pageItem);
+                }
+            } catch (error) {
+                showAlert('Error al obtener anuncios', 'danger');
+                console.error('Error fetching anuncios:', error);
+            }
+        }
+
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const anuncio = {
+                titulo: document.getElementById('create-titulo').value,
+                descripcion: document.getElementById('create-descripcion').value,
+                fecha: document.getElementById('create-fecha').value
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(anuncio)
+                });
+                if (!response.ok) throw new Error('Error al crear anuncio');
+                showAlert('Anuncio creado exitosamente', 'success');
+                fetchAnuncios(currentPage);
+            } catch (error) {
+                showAlert('Error al crear anuncio', 'danger');
+                console.error('Error creating anuncio:', error);
+            }
+        });
+
+        async function editAnuncio(id) {
+            const titulo = prompt('Nuevo título:');
+            const descripcion = prompt('Nueva descripción:');
+            const fecha = prompt('Nueva fecha (YYYY-MM-DD):');
+            if (titulo && descripcion && fecha) {
+                try {
+                    const response = await fetch(`${apiUrl}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ titulo, descripcion, fecha })
+                    });
+                    if (!response.ok) throw new Error('Error al actualizar anuncio');
+                    showAlert('Anuncio actualizado exitosamente', 'success');
+                    fetchAnuncios(currentPage);
+                } catch (error) {
+                    showAlert('Error al actualizar anuncio', 'danger');
+                    console.error('Error updating anuncio:', error);
+                }
+            }
+        }
+
+        async function deleteAnuncio(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este anuncio?')) {
+                try {
+                    await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+                    showAlert('Anuncio eliminado exitosamente', 'success');
+                    fetchAnuncios(currentPage);
+                } catch (error) {
+                    showAlert('Error al eliminar anuncio', 'danger');
+                    console.error('Error deleting anuncio:', error);
+                }
+            }
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            fetchAnuncios(page);
+        }
+
+        fetchAnuncios(currentPage);
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Promoción</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .small-image {
+            width: 50%; /* Puedes ajustar este valor según sea necesario */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/inicio_de_Sesion/inicio.html">Grupo Cultural</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/Grupo_Cultural.html">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vistas/Bachillerato.html">Bachillerato Tecnológico en Artes Byron Gálvez</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vistas/EscuelaDanza.html">Escuela de Danza</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vistas/iniciacion.html">iniciacion</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/recorrido/index.html">Recorrido Virtual</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Encabezado -->
+    <header class="jumbotron text-center">
+        <h1 class="display-4">Bienvenido al Grupo Cultural</h1>
+        <p class="lead"></p>
+        <a href="/mapa/mapa.html" class="btn btn-primary btn-lg">Ubicacion</a>
+    </header>
+
+    <!-- Sección Acerca de -->
+    <section class="container mt-5">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2>Acerca de Grupo Cultural</h2>
+                <p>Somos una institución educativa comprometida con la excelencia académica y el desarrollo integral de nuestros estudiantes. Ofrecemos una educación de calidad que prepara a los jóvenes para los retos del futuro.</p>
+            </div>
+            <div class="col-lg-6">
+                <img src="/inicio_de_Sesion/imagenes/patio.jpg" class="img-fluid small-image" alt="Imagen del bachillerato">
+            </div>
+        </div>
+    </section>
+
+
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Galería de Videos</h1>
+
+        <!-- Galería de Videos -->
+        <div class="row" id="videoGallery">
+            <!-- Los videos cargados se mostrarán aquí -->
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <li class="page-item" id="prevPage">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item" id="nextPage">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+    <hr>
+    <!-- Sección de Contacto -->
+    <div class="container mt-5">
+        <hr>
+        <h3>Ingresar Contacto</h3>
+        <hr>
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" class="form-control" id="name" placeholder="Ingresa tu nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Ingresa tu email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="tel" class="form-control" id="phone" placeholder="Ingresa tu número de teléfono" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Mensaje</label>
+                <textarea class="form-control" id="message" rows="3" placeholder="Ingresa tu mensaje" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+    </div>
+    <hr>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 py-4 bg-light">
+        <p>&copy; 2024 Grupo Cultural. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="/bachillerato_js/mensaje.js"></script>
+    <script src="/iniciacionjs/1crud.js"></script>
+</body>
+</html>

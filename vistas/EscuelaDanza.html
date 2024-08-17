@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Danza</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Escuela de Danza</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/index.html">Inicio</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <header class="jumbotron text-center">
+        <h1 class="display-4">Escuela de Danza</h1>
+        <p class="lead">Formamos estudiantes para un futuro brillante.</p>
+        <a href="/mapa/mapa.html" class="btn btn-primary btn-lg">Ubicación de la Escuela de Danza</a>
+    </header>
+    <section class="container mt-5">
+        <div class="row">
+            <div class="col-lg-6">
+                <h2>Acerca de Nosotros Escuela de Danza</h2>
+                <p>Somos una institución educativa comprometida con la excelencia académica y el desarrollo integral de nuestros estudiantes. Ofrecemos una educación de calidad que prepara a los jóvenes para los retos del futuro.</p>
+            </div>
+            <div class="col-lg-6">
+                <img src="/escuelas/imagenes/portada.jpg" class="img-fluid" alt="Imagen del bachillerato">
+            </div>
+        </div>
+    </section>
+    <hr>
+    <div class="container">
+        <h1 class="text-center">Vista de Noticias</h1>
+        <div id="newsList" class="mt-4"></div>
+        <nav aria-label="Page navigation">
+            <ul id="pagination" class="pagination justify-content-center mt-4"></ul>
+        </nav>
+    </div>
+    <hr>
+    <div class="container mt-5">
+        <h2>Clases</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://2.bp.blogspot.com/-sXUjSKGkedE/VsHKo0d6asI/AAAAAAAAAQE/vscLYgBLT_c/w1200-h630-p-k-no-nu/ballet-clasico-de-valencia-02b.jpg" class="card-img-top" alt="Ballet">
+                    <div class="card-body">
+                        <h5 class="card-title">Ballet</h5>
+                        <p class="card-text">El ballet es un viaje donde la pasión y la técnica se entrelazan para crear momentos de pura poesía en movimiento.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://th.bing.com/th/id/OIP.PyB9H1xq8Nf7qccNt4VQ0QHaE8?rs=1&pid=ImgDetMain" class="card-img-top" alt="Hip Hop">
+                    <div class="card-body">
+                        <h5 class="card-title">Danza Moderna</h5>
+                        <p class="card-text">En la danza moderna, cada coreografía es una celebración de la individualidad y la diversidad de cada bailarín.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://th.bing.com/th/id/R.b767c69ce18ba4e727846afb619fe0ca?rik=NnP8qA3j%2b8c06Q&riu=http%3a%2f%2fvivesantarosa.com.mx%2fwp-content%2fuploads%2f2019%2f08%2fGrupo-de-Danza-Folkl%c3%b3rica-Cultura-y-Tradici%c3%b3n-Mexicana-Nota01-07.jpg&ehk=7Gwxrtm69lCBK%2fC19DSW15r5FonGPyWK7eEzTNWW1cw%3d&risl=&pid=ImgRaw&r=0" class="card-img-top" alt="Salsa">
+                    <div class="card-body">
+                        <h5 class="card-title">Danza Folklórica</h5>
+                        <p class="card-text">A través de la danza folklórica, revivimos el pasado y lo traemos al presente, creando un vínculo eterno con nuestras tradiciones.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <h1>Visualización de Videos</h1>
+        <div id="videoGrid" class="row"></div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item">
+                    <button class="page-link" id="prevPage" onclick="changeVideoPage(-1)">Anterior</button>
+                </li>
+                <li class="page-item">
+                    <button class="page-link" id="nextPage" onclick="changeVideoPage(1)">Siguiente</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <hr>
+    <!-- Sección de Contacto -->
+    <div class="container mt-5">
+        <hr>
+        <h3>Ingresar Contacto</h3>
+        <hr>
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" class="form-control" id="name" placeholder="Ingresa tu nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Ingresa tu email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <input type="tel" class="form-control" id="phone" placeholder="Ingresa tu número de teléfono" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Mensaje</label>
+                <textarea class="form-control" id="message" rows="3" placeholder="Ingresa tu mensaje" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+    </div>
+    <hr>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ <script src="/danzajs/todo.js"></script>
+</body>
+</html>
