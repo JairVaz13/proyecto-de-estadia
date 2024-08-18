@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', fetchVideos);
 
 // Fetch videos and add them to the carousel
 async function fetchVideos() {
-    const response = await fetch('http://localhost:8000/videos/');
+    const response = await fetch('https://api1-estadia.onrender.com/videos/');
     const videos = await response.json();
     const carouselInner = document.getElementById('carouselVideos');
 
@@ -14,7 +14,7 @@ async function fetchVideos() {
         videoItem.innerHTML = `
             <div class="video-container position-relative">
                 <video id="video-${video.id}" class="d-block w-100" controls>
-                    <source src="http://localhost:8000/videos/${video.id}" type="video/mp4">
+                    <source src="https://api1-estadia.onrender.com/videos/${video.id}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
                 <button class="btn btn-primary fullscreen-btn position-absolute" onclick="openFullscreen(${video.id})">Pantalla Completa</button>

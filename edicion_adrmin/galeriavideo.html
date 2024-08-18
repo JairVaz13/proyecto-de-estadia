@@ -82,7 +82,7 @@
         formData.append('title', document.getElementById('title').value);
         formData.append('video', document.getElementById('videoFile').files[0]);
 
-        const response = await fetch('http://localhost:8000/videos/', {
+        const response = await fetch('https://api1-estadia.onrender.com/videos/', {
             method: 'POST',
             body: formData
         });
@@ -98,7 +98,7 @@
 
     // Fetch and display videos
     async function fetchVideos() {
-        const response = await fetch('http://localhost:8000/videos/');
+        const response = await fetch('https://api1-estadia.onrender.com/videos/');
         const videos = await response.json();
         videoList.innerHTML = '';
         videos.forEach(video => {
@@ -141,7 +141,7 @@
 
     document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
         if (videoIdToDelete !== null) {
-            const response = await fetch(`http://localhost:8000/videos/${videoIdToDelete}`, {
+            const response = await fetch(`https://api1-estadia.onrender.com/videos/${videoIdToDelete}`, {
                 method: 'DELETE'
             });
 
@@ -167,7 +167,7 @@
                 formData.append('video', videoFile);
             }
 
-            const response = await fetch(`http://localhost:8000/videos/${id}`, {
+            const response = await fetch(`https://api1-estadia.onrender.com/videos/${id}`, {
                 method: 'PUT',
                 body: formData
             });

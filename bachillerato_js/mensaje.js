@@ -5,7 +5,7 @@ document.getElementById("contactForm").addEventListener("submit", async function
     const phone = document.getElementById("phone").value;
     const message = document.getElementById("message").value;
 
-    const response = await fetch("http://127.0.0.1:8000/contacts/", {
+    const response = await fetch("https://api1-estadia.onrender.com/contacts/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
