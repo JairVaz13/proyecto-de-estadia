@@ -96,7 +96,8 @@
                     deleteButton.classList.add('btn', 'btn-danger');
                     deleteButton.onclick = async () => {
                         try {
-                            await fetch(`https://api1-estadia.onrender.com/images/${image.id}`, {
+                            const fileName = image.url.split('/').pop();
+                            await fetch(`https://api1-estadia.onrender.com/images/${fileName}`, {
                                 method: 'DELETE',
                             });
                             mostrarAlerta("Imagen eliminada exitosamente.", "success");
