@@ -61,8 +61,10 @@
             });
 
             if (response.ok) {
+                const result = await response.json();
+                const imageUrl = `https://api3-estadia.onrender.com/static/images/${result.filename}`;
+                addImageToList(imageUrl); // Añadir la imagen a la lista de imágenes sin recargar toda la lista
                 alert('Image uploaded successfully');
-                fetchImages();
             } else {
                 alert('Failed to upload image');
             }
@@ -74,14 +76,19 @@
             const response = await fetch('https://api3-estadia.onrender.com/images/');
             const images = await response.json();
             images.forEach(image => {
-                const div = document.createElement('div');
-                div.classList.add('image-container');
-                div.innerHTML = `
-                    <img src="${image}" class="img-thumbnail" alt="Image">
-                    <button class="btn btn-danger mt-2" onclick="deleteImage('${image}')">Delete</button>
-                `;
-                imageList.appendChild(div);
+                addImageToList(image);
             });
+        }
+
+        // Añadir la imagen al DOM
+        function addImageToList(imageUrl) {
+            const div = document.createElement('div');
+            div.classList.add('image-container');
+            div.innerHTML = `
+                <img src="${imageUrl}" class="img-thumbnail" alt="Image">
+                <button class="btn btn-danger mt-2" onclick="deleteImage('${imageUrl}')">Delete</button>
+            `;
+            imageList.appendChild(div);
         }
 
         // Eliminar imagen
