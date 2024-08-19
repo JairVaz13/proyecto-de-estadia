@@ -16,7 +16,7 @@
 
     <script>
         const gallery = document.getElementById('gallery');
-        const apiUrl = 'https://api1-estadia.onrender.com';
+        const apiUrl = 'https://api2-estadia.onrender.com';
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -31,7 +31,7 @@
             }
         });
 
-        async function addImageToGallery(filename) {
+        function addImageToGallery(filename) {
             const imageUrl = `${apiUrl}/images/${filename}`;
             const img = new Image();
             img.src = imageUrl;
