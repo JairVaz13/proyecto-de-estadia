@@ -1,6 +1,6 @@
 const fetchAnuncios = async (page = 1) => {
     try {
-        const response = await fetch(`http://localhost:8000/anuncios?page=${page}&size=4`);
+        const response = await fetch(`https://api3-estadia.onrender.com/anuncios?page=${page}&size=4`);
         if (!response.ok) throw new Error('Error en la solicitud');
         const data = await response.json();
 
@@ -10,7 +10,6 @@ const fetchAnuncios = async (page = 1) => {
         data.forEach(anuncio => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                
                 <td>${anuncio.titulo}</td>
                 <td>${anuncio.descripcion}</td>
                 <td>${anuncio.fecha}</td>

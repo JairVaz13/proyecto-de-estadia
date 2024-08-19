@@ -37,50 +37,55 @@
         const imagesPerPage = 4;
 
         async function loadImages(page = 1) {
-            const response = await fetch('https://api2-estadia.onrender.com/images/');
-            const images = await response.json();
-            const collageDiv = document.getElementById('collage');
-            const paginationUl = document.getElementById('pagination');
+            try {
+                const response = await fetch('https://api3-estadia.onrender.com/images/');
+                if (!response.ok) throw new Error('Error al cargar imágenes');
+                const images = await response.json();
+                const collageDiv = document.getElementById('collage');
+                const paginationUl = document.getElementById('pagination');
 
-            // Calcular índices para paginación
-            const startIndex = (page - 1) * imagesPerPage;
-            const endIndex = page * imagesPerPage;
-            const paginatedImages = images.slice(startIndex, endIndex);
+                // Calcular índices para paginación
+                const startIndex = (page - 1) * imagesPerPage;
+                const endIndex = page * imagesPerPage;
+                const paginatedImages = images.slice(startIndex, endIndex);
 
-            collageDiv.innerHTML = ''; // Limpiar las imágenes antes de cargar nuevas
+                collageDiv.innerHTML = ''; // Limpiar las imágenes antes de cargar nuevas
 
-            paginatedImages.forEach(image => {
-                const colDiv = document.createElement('div');
-                colDiv.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3');
-                
-                const imgElement = document.createElement('img');
-                imgElement.src = image;
-                imgElement.alt = 'Imagen del Collage';
-                colDiv.appendChild(imgElement);
+                paginatedImages.forEach(image => {
+                    const colDiv = document.createElement('div');
+                    colDiv.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3');
+                    
+                    const imgElement = document.createElement('img');
+                    imgElement.src = image;
+                    imgElement.alt = 'Imagen del Collage';
+                    colDiv.appendChild(imgElement);
 
-                collageDiv.appendChild(colDiv);
-            });
+                    collageDiv.appendChild(colDiv);
+                });
 
-            paginationUl.innerHTML = ''; // Limpiar la paginación antes de cargar nueva
+                paginationUl.innerHTML = ''; // Limpiar la paginación antes de cargar nueva
 
-            // Calcular el número total de páginas
-            const totalPages = Math.ceil(images.length / imagesPerPage);
+                // Calcular el número total de páginas
+                const totalPages = Math.ceil(images.length / imagesPerPage);
 
-            // Crear botones de paginación
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement('li');
-                li.classList.add('page-item');
-                if (i === page) li.classList.add('active');
-                const a = document.createElement('a');
-                a.classList.add('page-link');
-                a.href = "#";
-                a.textContent = i;
-                a.onclick = (e) => {
-                    e.preventDefault();
-                    loadImages(i);
-                };
-                li.appendChild(a);
-                paginationUl.appendChild(li);
+                // Crear botones de paginación
+                for (let i = 1; i <= totalPages; i++) {
+                    const li = document.createElement('li');
+                    li.classList.add('page-item');
+                    if (i === page) li.classList.add('active');
+                    const a = document.createElement('a');
+                    a.classList.add('page-link');
+                    a.href = "#";
+                    a.textContent = i;
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        loadImages(i);
+                    };
+                    li.appendChild(a);
+                    paginationUl.appendChild(li);
+                }
+            } catch (error) {
+                console.error('Error al cargar imágenes:', error);
             }
         }
 
