@@ -3,183 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD de Anuncios</title>
+    <title>CRUD de Imágenes</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Administrar Anuncios</h1>
+        <h1 class="text-center mb-4">Administrar Imágenes</h1>
 
-        <!-- Formulario para crear anuncios -->
+        <!-- Formulario para subir imágenes -->
         <div class="mb-4">
-            <h2>Crear Anuncio</h2>
-            <form id="createForm">
+            <h2>Subir Imagen</h2>
+            <form id="uploadForm">
                 <div class="form-group">
-                    <label for="create-titulo">Título:</label>
-                    <input type="text" class="form-control" id="create-titulo" required>
+                    <label for="imageFile">Seleccionar imagen:</label>
+                    <input type="file" class="form-control-file" id="imageFile" name="file" required>
                 </div>
-                <div class="form-group">
-                    <label for="create-descripcion">Descripción:</label>
-                    <input type="text" class="form-control" id="create-descripcion" required>
-                </div>
-                <div class="form-group">
-                    <label for="create-fecha">Fecha:</label>
-                    <input type="date" class="form-control" id="create-fecha" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Crear</button>
+                <button type="submit" class="btn btn-primary">Subir</button>
             </form>
         </div>
 
-        <!-- Lista de anuncios -->
+        <!-- Lista de imágenes -->
         <div class="mt-5">
-            <h2>Lista de Anuncios</h2>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Título</th>
-                        <th>Descripción</th>
-                        <th>Fecha</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="anuncios-table-body">
-                    <!-- Los anuncios se insertarán aquí mediante JavaScript -->
-                </tbody>
-            </table>
-
-            <!-- Paginación -->
-            <nav aria-label="Page navigation">
-                <ul class="pagination" id="pagination-controls">
-                    <!-- Los controles de paginación se insertarán aquí mediante JavaScript -->
-                </ul>
-            </nav>
+            <h2>Imágenes Subidas</h2>
+            <div id="imageList" class="row">
+                <!-- Las imágenes y los botones de eliminar se cargarán aquí -->
+            </div>
         </div>
     </div>
 
     <script>
-        const apiUrl = 'https://api3-estadia.onrender.com/anuncios';
-        let currentPage = 1;
-        const pageSize = 4;
+        async function loadImages() {
+            const response = await fetch('https://api3-estadia.onrender.com/images/');
+            const images = await response.json();
+            const imageListDiv = document.getElementById('imageList');
+            imageListDiv.innerHTML = ''; // Limpiar la lista antes de cargar nuevas imágenes
 
-        function showAlert(message, type) {
-            const alertContainer = document.createElement('div');
-            alertContainer.className = `alert alert-${type} alert-dismissible fade show fixed-top mt-2`;
-            alertContainer.role = 'alert';
-            alertContainer.innerHTML = `
-                ${message}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            `;
-            document.body.appendChild(alertContainer);
-            setTimeout(() => alertContainer.remove(), 5000); // Remove alert after 5 seconds
+            images.forEach(image => {
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3', 'mb-4');
+                
+                const imgElement = document.createElement('img');
+                imgElement.src = image;
+                imgElement.alt = 'Imagen Subida';
+                imgElement.classList.add('img-fluid');
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('btn', 'btn-danger', 'mt-2');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.onclick = async () => {
+                    const imageName = image.split('/').pop();
+                    await fetch(`https://api3-estadia.onrender.com/images/${imageName}`, { method: 'DELETE' });
+                    loadImages(); // Recargar las imágenes después de eliminar
+                };
+
+                colDiv.appendChild(imgElement);
+                colDiv.appendChild(deleteButton);
+
+                imageListDiv.appendChild(colDiv);
+            });
         }
 
-        async function fetchAnuncios(page = 1) {
-            try {
-                const response = await fetch(`${apiUrl}?page=${page}&size=${pageSize}`);
-                if (!response.ok) throw new Error('Error al obtener anuncios');
-                const anuncios = await response.json();
-                const tableBody = document.getElementById('anuncios-table-body');
-                const paginationControls = document.getElementById('pagination-controls');
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageFile');
+            formData.append('file', fileInput.files[0]);
 
-                tableBody.innerHTML = '';
-                paginationControls.innerHTML = '';
+            await fetch('https://api3-estadia.onrender.com/upload/', {
+                method: 'POST',
+                body: formData
+            });
 
-                anuncios.forEach(anuncio => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${anuncio.id}</td>
-                        <td>${anuncio.titulo}</td>
-                        <td>${anuncio.descripcion}</td>
-                        <td>${anuncio.fecha}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="editAnuncio(${anuncio.id})">Actualizar</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteAnuncio(${anuncio.id})">Eliminar</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-                // Generate pagination controls
-                const totalPages = Math.ceil(100 / pageSize); // Example total count, replace with actual total
-                for (let i = 1; i <= totalPages; i++) { // Example: Pagination with a fixed number of pages
-                    const pageItem = document.createElement('li');
-                    pageItem.className = `page-item ${i === page ? 'active' : ''}`;
-                    pageItem.innerHTML = `
-                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                    `;
-                    paginationControls.appendChild(pageItem);
-                }
-            } catch (error) {
-                showAlert('Error al obtener anuncios', 'danger');
-                console.error('Error fetching anuncios:', error);
-            }
-        }
-
-        document.getElementById('createForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const anuncio = {
-                titulo: document.getElementById('create-titulo').value,
-                descripcion: document.getElementById('create-descripcion').value,
-                fecha: document.getElementById('create-fecha').value
-            };
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(anuncio)
-                });
-                if (!response.ok) throw new Error('Error al crear anuncio');
-                showAlert('Anuncio creado exitosamente', 'success');
-                fetchAnuncios(currentPage);
-            } catch (error) {
-                showAlert('Error al crear anuncio', 'danger');
-                console.error('Error creating anuncio:', error);
-            }
+            fileInput.value = ''; // Limpiar el campo de archivo
+            loadImages(); // Recargar las imágenes después de subir
         });
 
-        async function editAnuncio(id) {
-            const titulo = prompt('Nuevo título:');
-            const descripcion = prompt('Nueva descripción:');
-            const fecha = prompt('Nueva fecha (YYYY-MM-DD):');
-            if (titulo && descripcion && fecha) {
-                try {
-                    const response = await fetch(`${apiUrl}/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ titulo, descripcion, fecha })
-                    });
-                    if (!response.ok) throw new Error('Error al actualizar anuncio');
-                    showAlert('Anuncio actualizado exitosamente', 'success');
-                    fetchAnuncios(currentPage);
-                } catch (error) {
-                    showAlert('Error al actualizar anuncio', 'danger');
-                    console.error('Error updating anuncio:', error);
-                }
-            }
-        }
-
-        async function deleteAnuncio(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este anuncio?')) {
-                try {
-                    await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
-                    showAlert('Anuncio eliminado exitosamente', 'success');
-                    fetchAnuncios(currentPage);
-                } catch (error) {
-                    showAlert('Error al eliminar anuncio', 'danger');
-                    console.error('Error deleting anuncio:', error);
-                }
-            }
-        }
-
-        function changePage(page) {
-            currentPage = page;
-            fetchAnuncios(page);
-        }
-
-        fetchAnuncios(currentPage);
+        document.addEventListener('DOMContentLoaded', loadImages);
     </script>
 </body>
 </html>
