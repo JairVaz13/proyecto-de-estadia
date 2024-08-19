@@ -24,16 +24,20 @@
         }
     </style>
      <style>
-        .collage img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
+        .container {
+            text-align: center;
+            margin-top: 50px;
         }
-
-        .collage {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        .btn-custom {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -104,26 +108,12 @@
         </nav>
     </div>
     <hr>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Collage de Imágenes</h1>
-        <div class="collage">
-            <div class="col">
-                <img src="https://via.placeholder.com/400x300" alt="Imagen 1">
-            </div>
-            <div class="col">
-                <img src="https://via.placeholder.com/400x300" alt="Imagen 2">
-            </div>
-            <div class="col">
-                <img src="https://via.placeholder.com/400x300" alt="Imagen 3">
-            </div>
-            <div class="col">
-                <img src="https://via.placeholder.com/400x300" alt="Imagen 4">
-            </div>
-            <div class="col">
-                <img src="https://via.placeholder.com/400x300" alt="Imagen 5">
-            </div>
-            
-        </div>
+    <div class="container">
+        <h1 class="display-4">Galeria de imagenes</h1>
+        <p class="lead">Este es un texto de ejemplo para mostrar cómo se puede combinar texto, una imagen y un botón con Bootstrap.</p>
+        <img src="https://via.placeholder.com/300" alt="Imagen de ejemplo" class="img-fluid">
+        <br>
+        <a href="/vistas/vistacollage.html" class="btn btn-custom btn-lg mt-4" onclick="alert('¡Has hecho clic en el botón!')">Haz clic aquí</a>
     </div>
 
     <!-- Sección de Contacto -->
@@ -131,6 +121,7 @@
         <hr>
         <h3>Ingresar Contacto</h3>
         <hr>
+        <div id="alert-container"></div> <!-- Contenedor para las alertas -->
         <form id="contactForm">
             <div class="form-group">
                 <label for="name">Nombre</label>
@@ -152,6 +143,7 @@
         </form>
     </div>
     <hr>
+</div>
 
     <!-- Footer -->
     <footer class="bg-light py-4">
@@ -165,9 +157,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="/iniciacionjs/anucios.js"></script>
-    <script>
-        
-        
-    </script>
+    <script src="/bachillerato_js/mensaje.js"></script>
 </body>
 </html>

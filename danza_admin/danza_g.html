@@ -12,12 +12,15 @@
         .container {
             margin-top: 20px;
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center">Gestión de Noticias</h1>
-        
+
         <!-- Alertas -->
         <div id="alertContainer"></div>
 
@@ -25,6 +28,7 @@
         <div class="mt-4">
             <h2>Agregar/Actualizar Noticia</h2>
             <form id="newsForm">
+                <input type="hidden" id="newsIndex" value="">
                 <div class="form-group">
                     <label for="title">Título</label>
                     <input type="text" class="form-control" id="title" required>
@@ -40,11 +44,12 @@
                 <button type="submit" class="btn btn-primary">Guardar Noticia</button>
             </form>
         </div>
+
         <div id="newsList" class="mt-4"></div>
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8000/news';  // Cambia esta URL según tu configuración
+        const API_URL = 'http://localhost:8000/news';
 
         // Mostrar alerta
         function showAlert(message, type) {
@@ -76,8 +81,8 @@
                                 <h5>${news.title}</h5>
                                 <p>${news.description}</p>
                                 <small>${news.date}</small>
-                                <button class="btn btn-danger btn-sm float-right ml-2" onclick="deleteNews('${news._id}')">Eliminar</button>
-                                <button class="btn btn-info btn-sm float-right" onclick="editNews('${news._id}')">Editar</button>
+                                <button class="btn btn-danger btn-sm float-right ml-2" onclick="deleteNews(${index})">Eliminar</button>
+                                <button class="btn btn-info btn-sm float-right" onclick="editNews(${index})">Editar</button>
                             </li>
                         `;
                     });
@@ -90,7 +95,7 @@
                 });
         }
 
-        function createOrUpdateNews(id = null) {
+        function createOrUpdateNews(index = null) {
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const date = document.getElementById('date').value;
@@ -100,8 +105,8 @@
             let url = API_URL;
             let method = 'POST';
 
-            if (id !== null) {
-                url += `/${id}`;
+            if (index !== null) {
+                url += `/${index}`;
                 method = 'PUT';
             }
 
@@ -111,21 +116,23 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(news)
-            }).then(response => response.json())
-              .then(() => {
-                  fetchNews();
-                  document.getElementById('newsForm').reset();
-                  showAlert('Noticia guardada exitosamente', 'success');
-              })
-              .catch(error => {
-                  console.error('Error:', error);
-                  showAlert('Error al guardar la noticia', 'danger');
-              });
+            })
+            .then(response => response.json())
+            .then(() => {
+                fetchNews();
+                document.getElementById('newsForm').reset();
+                document.getElementById('newsIndex').value = '';
+                showAlert('Noticia guardada exitosamente', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error al guardar la noticia', 'danger');
+            });
         }
 
-        function deleteNews(id) {
+        function deleteNews(index) {
             if (confirm('¿Estás seguro de que deseas eliminar esta noticia?')) {
-                fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+                fetch(`${API_URL}/${index}`, { method: 'DELETE' })
                     .then(() => {
                         fetchNews();
                         showAlert('Noticia eliminada exitosamente', 'success');
@@ -137,16 +144,17 @@
             }
         }
 
-        function editNews(id) {
-            fetch(`${API_URL}/${id}`)
+        function editNews(index) {
+            fetch(`${API_URL}/${index}`)
                 .then(response => response.json())
                 .then(news => {
                     document.getElementById('title').value = news.title;
                     document.getElementById('description').value = news.description;
                     document.getElementById('date').value = news.date;
+                    document.getElementById('newsIndex').value = index;
                     document.getElementById('newsForm').onsubmit = (event) => {
                         event.preventDefault();
-                        createOrUpdateNews(id);
+                        createOrUpdateNews(index);
                     };
                 })
                 .catch(error => {

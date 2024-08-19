@@ -5,48 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Videos</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
-        .video-card {
-            margin-bottom: 20px;
+        .container {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Gestión de Videos</h1>
+    <div class="container">
+        <h1 class="text-center">Gestión de Videos</h1>
 
         <!-- Alertas -->
         <div id="alertContainer"></div>
 
-        <!-- Formulario para subir un video -->
-        <div class="mb-4">
-            <h2>Subir Nuevo Video</h2>
-            <form id="uploadForm">
+        <!-- Formulario para agregar videos -->
+        <div class="mt-4">
+            <h2>Subir Video</h2>
+            <form id="videoForm">
                 <div class="form-group">
-                    <label for="videoTitle">Título:</label>
-                    <input type="text" class="form-control" id="videoTitle" name="title" required>
+                    <label for="title">Título</label>
+                    <input type="text" class="form-control" id="title" required>
                 </div>
                 <div class="form-group">
-                    <label for="videoDescription">Descripción:</label>
-                    <input type="text" class="form-control" id="videoDescription" name="description" required>
+                    <label for="description">Descripción</label>
+                    <textarea class="form-control" id="description" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="videoFile">Archivo de Video:</label>
-                    <input type="file" class="form-control-file" id="videoFile" name="file" accept="video/*" required>
+                    <label for="file">Archivo de Video</label>
+                    <input type="file" class="form-control-file" id="file" accept="video/*" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Subir Video</button>
             </form>
         </div>
-
-        <!-- Lista de videos -->
-        <h2>Lista de Videos</h2>
-        <div id="videoList" class="row"></div>
+        <div id="videoList" class="mt-4"></div>
     </div>
 
     <script>
-        const apiUrl = 'http://localhost:8000';
+        const API_URL = 'http://localhost:8000';  // Cambia esta URL según tu configuración
 
-        // Mostrar alerta
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
@@ -65,90 +64,82 @@
             }, 5000);
         }
 
-        // Subir video
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = new FormData();
-            formData.append('title', document.getElementById('videoTitle').value);
-            formData.append('description', document.getElementById('videoDescription').value);
-            formData.append('file', document.getElementById('videoFile').files[0]);
-
-            try {
-                const response = await fetch(`${apiUrl}/upload_video`, {
-                    method: 'POST',
-                    body: formData
+        function fetchVideos() {
+            fetch(`${API_URL}/videos`)
+                .then(response => response.json())
+                .then(data => {
+                    let videosHtml = '<ul class="list-group">';
+                    data.forEach(video => {
+                        videosHtml += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${video.title}</span>
+                                <div>
+                                    <a href="${video.video_url}" class="btn btn-primary btn-sm" target="_blank">Ver</a>
+                                    <button class="btn btn-danger btn-sm ml-2" onclick="deleteVideo('${encodeURIComponent(video.videoId)}')">Eliminar</button>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    videosHtml += '</ul>';
+                    document.getElementById('videoList').innerHTML = videosHtml;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error al cargar los videos', 'danger');
                 });
-                const data = await response.json();
-                if (response.ok) {
-                    showAlert('Video subido exitosamente', 'success');
-                    fetchVideos();
-                } else {
-                    showAlert('Error al subir el video', 'danger');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error al subir el video', 'danger');
-            }
+        }
+
+        const deleteVideo = async (videoName) => {
+    try {
+        const response = await fetch(`http://localhost:8000/delete_video/${encodeURIComponent(videoName)}`, {
+            method: 'DELETE'
         });
 
-        // Obtener videos
-        async function fetchVideos() {
-            try {
-                const response = await fetch(`${apiUrl}/videos`);
-                const videos = await response.json();
-                const videoList = document.getElementById('videoList');
-                videoList.innerHTML = '';
-                videos.forEach(video => {
-                    const card = document.createElement('div');
-                    card.className = 'col-md-4';
-                    card.innerHTML = `
-                        <div class="card video-card">
-                            <video class="card-img-top" controls>
-                                <source src="${video.video_url}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                            <div class="card-body">
-                                <h5 class="card-title">${video.title}</h5>
-                                <p class="card-text">${video.description}</p>
-                                <button class="btn btn-danger" onclick="deleteVideo('${video._id}')">Eliminar</button>
-                            </div>
-                        </div>
-                    `;
-                    videoList.appendChild(card);
-                });
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
         }
 
-        // Eliminar video
-        async function deleteVideo(videoId) {
-            if (confirm('¿Estás seguro de que deseas eliminar este video?')) {
-                try {
-                    const response = await fetch(`${apiUrl}/delete_video/${videoId}`, {
-                        method: 'DELETE'
-                    });
-                    const data = await response.json();
-                    if (response.ok) {
-                        showAlert('Video eliminado exitosamente', 'success');
-                        fetchVideos();
-                    } else {
-                        showAlert('Error al eliminar el video', 'danger');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showAlert('Error al eliminar el video', 'danger');
+        const result = await response.json();
+        console.log('Video eliminado exitosamente', result);
+    } catch (error) {
+        console.error('Error al eliminar el video:', error);
+    }
+};
+
+        document.getElementById('videoForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('file', file);
+
+            fetch(`${API_URL}/upload_video`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Video subido exitosamente', 'success');
+                    fetchVideos();  // Actualiza la lista de videos
+                } else {
+                    throw new Error('Error al subir el video');
                 }
-            }
-        }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error al subir el video', 'danger');
+            });
+        });
 
-        // Cargar videos al cargar la página
+        // Cargar videos al inicio
         fetchVideos();
     </script>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

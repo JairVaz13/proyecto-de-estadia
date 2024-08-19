@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Imágenes</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Administrar Imágenes</h1>
+
+        <!-- Formulario para subir imágenes -->
+        <div class="mb-4">
+            <h2>Subir Imagen</h2>
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="imageFile">Seleccionar imagen:</label>
+                    <input type="file" class="form-control-file" id="imageFile" name="file" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Subir</button>
+            </form>
+        </div>
+
+        <!-- Lista de imágenes -->
+        <div class="mt-5">
+            <h2>Imágenes Subidas</h2>
+            <div id="imageList" class="row">
+                <!-- Las imágenes y los botones de eliminar se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadImages() {
+            const response = await fetch('http://localhost:8000/images/');
+            const images = await response.json();
+            const imageListDiv = document.getElementById('imageList');
+            imageListDiv.innerHTML = ''; // Limpiar la lista antes de cargar nuevas imágenes
+
+            images.forEach(image => {
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3', 'mb-4');
+                
+                const imgElement = document.createElement('img');
+                imgElement.src = image;
+                imgElement.alt = 'Imagen Subida';
+                imgElement.classList.add('img-fluid');
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('btn', 'btn-danger', 'mt-2');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.onclick = async () => {
+                    const imageName = image.split('/').pop();
+                    await fetch(`http://localhost:8000/images/${imageName}`, { method: 'DELETE' });
+                    loadImages(); // Recargar las imágenes después de eliminar
+                };
+
+                colDiv.appendChild(imgElement);
+                colDiv.appendChild(deleteButton);
+
+                imageListDiv.appendChild(colDiv);
+            });
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageFile');
+            formData.append('file', fileInput.files[0]);
+
+            await fetch('http://localhost:8000/upload/', {
+                method: 'POST',
+                body: formData
+            });
+
+            fileInput.value = ''; // Limpiar el campo de archivo
+            loadImages(); // Recargar las imágenes después de subir
+        });
+
+        document.addEventListener('DOMContentLoaded', loadImages);
+    </script>
+</body>
+</html>
