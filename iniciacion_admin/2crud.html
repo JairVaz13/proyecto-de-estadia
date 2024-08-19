@@ -1,84 +1,103 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUD de Imágenes</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Image CRUD</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #image-list img {
+            max-width: 150px;
+            margin: 10px;
+        }
+        .image-container {
+            display: inline-block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Administrar Imágenes</h1>
+    <div class="container">
+        <h1 class="mt-5">Image CRUD</h1>
 
         <!-- Formulario para subir imágenes -->
-        <div class="mb-4">
-            <h2>Subir Imagen</h2>
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label for="imageFile">Seleccionar imagen:</label>
-                    <input type="file" class="form-control-file" id="imageFile" name="file" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Subir</button>
-            </form>
-        </div>
-
-        <!-- Lista de imágenes -->
-        <div class="mt-5">
-            <h2>Imágenes Subidas</h2>
-            <div id="imageList" class="row">
-                <!-- Las imágenes y los botones de eliminar se cargarán aquí -->
+        <form id="upload-form" class="mt-4 mb-4">
+            <div class="form-group">
+                <label for="image">Upload Image:</label>
+                <input type="file" class="form-control-file" id="image" name="image" accept="image/*" required>
             </div>
-        </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+
+        <!-- Listado de imágenes -->
+        <h2>Uploaded Images</h2>
+        <div id="image-list" class="d-flex flex-wrap"></div>
     </div>
 
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
-        async function loadImages() {
-            const response = await fetch('https://api3-estadia.onrender.com/images/');
-            const images = await response.json();
-            const imageListDiv = document.getElementById('imageList');
-            imageListDiv.innerHTML = ''; // Limpiar la lista antes de cargar nuevas imágenes
+        const uploadForm = document.getElementById('upload-form');
+        const imageList = document.getElementById('image-list');
 
-            images.forEach(image => {
-                const colDiv = document.createElement('div');
-                colDiv.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3', 'mb-4');
-                
-                const imgElement = document.createElement('img');
-                imgElement.src = image;
-                imgElement.alt = 'Imagen Subida';
-                imgElement.classList.add('img-fluid');
+        // Cargar las imágenes al iniciar la página
+        window.onload = fetchImages;
 
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('btn', 'btn-danger', 'mt-2');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.onclick = async () => {
-                    const imageName = image.split('/').pop();
-                    await fetch(`https://api3-estadia.onrender.com/images/${imageName}`, { method: 'DELETE' });
-                    loadImages(); // Recargar las imágenes después de eliminar
-                };
-
-                colDiv.appendChild(imgElement);
-                colDiv.appendChild(deleteButton);
-
-                imageListDiv.appendChild(colDiv);
-            });
-        }
-
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+        // Subir imagen
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             const formData = new FormData();
-            const fileInput = document.getElementById('imageFile');
-            formData.append('file', fileInput.files[0]);
+            const imageFile = document.getElementById('image').files[0];
+            formData.append('file', imageFile);
 
-            await fetch('https://api3-estadia.onrender.com/upload/', {
+            const response = await fetch('https://api3-estadia.onrender.com/upload/', {
                 method: 'POST',
                 body: formData
             });
 
-            fileInput.value = ''; // Limpiar el campo de archivo
-            loadImages(); // Recargar las imágenes después de subir
+            if (response.ok) {
+                alert('Image uploaded successfully');
+                fetchImages();
+            } else {
+                alert('Failed to upload image');
+            }
         });
 
-        document.addEventListener('DOMContentLoaded', loadImages);
+        // Obtener y mostrar las imágenes
+        async function fetchImages() {
+            imageList.innerHTML = '';
+            const response = await fetch('https://api3-estadia.onrender.com/images/');
+            const images = await response.json();
+            images.forEach(image => {
+                const div = document.createElement('div');
+                div.classList.add('image-container');
+                div.innerHTML = `
+                    <img src="${image}" class="img-thumbnail" alt="Image">
+                    <button class="btn btn-danger mt-2" onclick="deleteImage('${image}')">Delete</button>
+                `;
+                imageList.appendChild(div);
+            });
+        }
+
+        // Eliminar imagen
+        async function deleteImage(imageUrl) {
+            const imageName = imageUrl.split('/').pop();
+            const response = await fetch(`https://api3-estadia.onrender.com/images/${imageName}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Image deleted successfully');
+                fetchImages();
+            } else {
+                alert('Failed to delete image');
+            }
+        }
     </script>
 </body>
 </html>
