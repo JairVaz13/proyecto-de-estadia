@@ -9,6 +9,7 @@
 <body>
     <div class="container mt-5">
         <h2 class="text-center">Subir Imágenes</h2>
+        <div id="alerts"></div>
         <form id="uploadForm">
             <div class="mb-3">
                 <input type="file" class="form-control" id="imageFile" required>
@@ -25,6 +26,7 @@
     <script>
         const form = document.getElementById('uploadForm');
         const gallery = document.getElementById('gallery');
+        const alertsContainer = document.getElementById('alerts');
         const apiUrl = 'https://api2-estadia.onrender.com';
 
         form.addEventListener('submit', async (e) => {
@@ -41,15 +43,25 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    alert('Imagen subida con éxito');
+                    showAlert('Imagen subida con éxito', 'success');
                     addImageToGallery(data.filename);
                 } else {
-                    alert('Error al subir la imagen');
+                    showAlert('Error al subir la imagen', 'danger');
                 }
             } catch (error) {
                 console.error('Error:', error);
+                showAlert('Error al subir la imagen', 'danger');
             }
         });
+
+        function showAlert(message, type) {
+            alertsContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
 
         async function addImageToGallery(filename) {
             const imageUrl = `${apiUrl}/images/${filename}`;
@@ -87,14 +99,15 @@
                 });
 
                 if (response.ok) {
-                    alert('Imagen eliminada con éxito');
+                    showAlert('Imagen eliminada con éxito', 'success');
                     const card = button.closest('.col-lg-3');
                     card.remove();
                 } else {
-                    alert('Error al eliminar la imagen');
+                    showAlert('Error al eliminar la imagen', 'danger');
                 }
             } catch (error) {
                 console.error('Error:', error);
+                showAlert('Error al eliminar la imagen', 'danger');
             }
         }
     </script>
