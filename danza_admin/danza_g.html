@@ -45,11 +45,12 @@
             </form>
         </div>
 
+        <!-- Lista de noticias -->
         <div id="newsList" class="mt-4"></div>
     </div>
 
     <script>
-        const API_URL = 'http://localhost:8000/news';
+        const API_URL = 'https://api2-estadia.onrender.com/news';
 
         // Mostrar alerta
         function showAlert(message, type) {
@@ -70,6 +71,7 @@
             }, 5000);
         }
 
+        // Obtener noticias
         function fetchNews() {
             fetch(API_URL)
                 .then(response => response.json())
@@ -95,6 +97,7 @@
                 });
         }
 
+        // Crear o actualizar noticia
         function createOrUpdateNews(index = null) {
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
@@ -130,6 +133,7 @@
             });
         }
 
+        // Eliminar noticia
         function deleteNews(index) {
             if (confirm('¿Estás seguro de que deseas eliminar esta noticia?')) {
                 fetch(`${API_URL}/${index}`, { method: 'DELETE' })
@@ -144,6 +148,7 @@
             }
         }
 
+        // Editar noticia
         function editNews(index) {
             fetch(`${API_URL}/${index}`)
                 .then(response => response.json())
